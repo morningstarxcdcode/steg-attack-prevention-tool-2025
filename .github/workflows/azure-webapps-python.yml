@@ -19,6 +19,13 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Debug Info
+        run: |
+          which python
+          python --version
+          echo $PATH
+          ls -l
+
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
