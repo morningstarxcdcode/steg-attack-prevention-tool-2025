@@ -1,8 +1,4 @@
-name: Build and deploy Python app to Azure Web App
-
-env:
-  AZURE_WEBAPP_NAME: your-app-name  # set this to the name of your Azure Web App
-  PYTHON_VERSION: '3.8'             # set this to the Python version to use
+name: Deploy to GitHub Pages
 
 on:
   push:
@@ -11,68 +7,58 @@ on:
 
 permissions:
   contents: read
+  pages: write
+  id-token: write
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
       - uses: actions/checkout@v4
 
-      - name: Debug Info
+      # [Optional] Build your static site here
+      # Example for MkDocs:
+      # - name: Set up Python
+      #   uses: actions/setup-python@v5
+      #   with:
+      #     python-version: '3.8'
+      # - name: Install dependencies
+      #   run: pip install mkdocs
+      # - name: Build site
+      #   run: mkdocs build
+
+      - name: Install system dependencies
+        run: sudo apt-get update && sudo apt-get install -y libgl1
+
+      # If you are not using a static site generator, copy your static files to 'site/'
+      - name: Prepare site directory
         run: |
-          which python
-          python --version
-          echo $PATH
-          ls -l
+          mkdir -p site
+          cp README.md site/ 2>/dev/null || true
+          cp PROJECT_SUMMARY.md site/ 2>/dev/null || true
+          cp LICENSE site/ 2>/dev/null || true
+          cp *.html *.css *.js site/ 2>/dev/null || true
+          cp -r assets site/ 2>/dev/null || true
+          # Add more copy commands as needed for your static content
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
+      - name: Setup Pages
+        uses: actions/configure-pages@v4
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
         with:
-          python-version: ${{ env.PYTHON_VERSION }}
-          cache: pip
+          path: site/
 
-      - name: Install dependencies
-        run: |
-          python -m pip install --upgrade pip
-          pip install -r requirements.txt
-
-      # Optional: run your tests here
-      # - name: Run tests
-      #   run: pytest
-
-      - name: Prepare artifact for deployment
-        run: |
-          mkdir -p artifact
-          shopt -s extglob
-          cp -r !(artifact) artifact/
-          rm -rf artifact/venv  # just in case
-
-      - name: Upload artifact for deployment jobs
-        uses: actions/upload-artifact@v4
-        with:
-          name: python-app
-          path: artifact/
-
-  deploy:
-    permissions:
-      contents: none
-    runs-on: ubuntu-latest
-    needs: build
-    environment:
-      name: 'Development'
-      url: ${{ steps.deploy-to-webapp.outputs.webapp-url }}
-
-    steps:
-      - name: Download artifact from build job
-        uses: actions/download-artifact@v4
-        with:
-          name: python-app
-          path: .
-
-      - name: 'Deploy to Azure Web App'
-        id: deploy-to-webapp
-        uses: azure/webapps-deploy@v2
-        with:
-          app-name: ${{ env.AZURE_WEBAPP_NAME }}
-          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+  # The following deploy job is for Azure Web Apps and is not needed if you are only using GitHub Pages.
+  # It is commented out to avoid errors for users without an Azure account.
+  #
+  # deploy:
+  #   needs: build
+  #   runs-on: ubuntu-latest
+  #   environment:
+  #     name: github-pages
+  #     url: ${{ steps.deployment.outputs.page_url }}
+  #   steps:
+  #     - name: Deploy to GitHub Pages
+  #       id: deployment
+  #       uses: actions/deploy-pages@v4
