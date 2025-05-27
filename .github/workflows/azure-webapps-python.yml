@@ -36,8 +36,9 @@ jobs:
 
       - name: Prepare artifact for deployment
         run: |
-          mkdir artifact
-          cp -r * artifact/
+          mkdir -p artifact
+          shopt -s extglob
+          cp -r !(artifact) artifact/
           rm -rf artifact/venv  # just in case
 
       - name: Upload artifact for deployment jobs
