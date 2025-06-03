@@ -28,6 +28,10 @@ jobs:
         run: |
           if [ -f tests ]; then pytest; fi
 
+      - name: Build package (wheel and sdist)
+        run: |
+          python setup.py sdist bdist_wheel
+
       # ---- Deployment Step Example (to Heroku) ----
       # Uncomment and configure the following step for Heroku deployment.
       # - name: Deploy to Heroku
