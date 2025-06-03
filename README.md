@@ -29,7 +29,7 @@ Welcome to the Steganography Attack Prevention Tool, a cutting-edge security sol
 pip install -r requirements.txt
 ```
 
-![Installation GIF](https://media.giphy.com/media/3o7aD2saalBwwftBIY/giphy.gif)
+
 
 ---
 
